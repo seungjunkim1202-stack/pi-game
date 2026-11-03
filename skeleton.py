@@ -31,7 +31,7 @@ draw = ImageDraw.Draw(img)
 player = [W // 2, H - 40]
 ball = [W // 2, 40]
 score = 0
-speed = 4
+speed = 3
 
 prev = time.monotonic()
 acc = 0.0
@@ -51,7 +51,7 @@ while True:
             player[0] += speed
         player[0] = max(12, min(W - 12, player[0]))
 
-        ball[1] += 3
+        ball[1] += 2
         if ball[1] > H:
             ball[1] = 0
             ball[0] = random.randint(20, W - 20)
