@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageOps
 
 S = 4                         # 4배로 그린 뒤 줄여서 가장자리를 부드럽게 한다
 OUT = "images"
+PAD = 12                      # 폭탄 물고기는 등의 심지 때문에 위쪽에 이만큼 여백을 더한다
 
 def new(w, h):
     return Image.new("RGBA", (w * S, h * S), (0, 0, 0, 0))
@@ -18,10 +19,11 @@ def R(*a):
 # ---------------- 물고기 ----------------
 def draw_fish(w, h, body, fin_c, tail_shift, stripe=None, belly=None, bomb=False, spark=0):
     """오른쪽을 보는 물고기. tail_shift: 꼬리 끝의 위아래 흔들림(-3~3). bomb=True면 등에 폭탄 심지가 달린다."""
-    img = new(w, h); d = ImageDraw.Draw(img)
-    cy = h * 0.58 if bomb else h / 2
+    oy = PAD if bomb else 0                # 폭탄 물고기는 몸을 PAD만큼 아래로 내려 그린다 (몸 모양은 일반 물고기와 똑같다)
+    img = new(w, h + oy); d = ImageDraw.Draw(img)
+    cy = h / 2 + oy
     bw = w * 0.68                          # 몸통 폭
-    bh = h * (0.5 if bomb else 0.62)       # 몸통 높이
+    bh = h * 0.62                          # 몸통 높이
     bx0 = w * 0.30                         # 몸통 왼쪽 끝
     # 꼬리
     tx = bx0 + 2
@@ -45,7 +47,7 @@ def draw_fish(w, h, body, fin_c, tail_shift, stripe=None, belly=None, bomb=False
     d.arc(R(bx0 + bw - 5, cy + bh * 0.02, bx0 + bw + 1, cy + bh * 0.2), 300, 60, fill=(60, 40, 40, 255), width=S // 2 + 1)
     if bomb:
         # 등에 달린 폭탄 심지와 깜빡이는 불꽃
-        fx, fy = bx0 + bw * 0.50, cy - bh / 2
+        fx, fy = bx0 + bw * 0.42, cy - bh / 2
         d.rectangle(R(fx - 3, fy - 4, fx + 3, fy + 1), fill=(90, 90, 90, 255))
         d.line(R(fx, fy - 4, fx + 3, fy - 9, fx + 6, fy - 9), fill=(200, 160, 80, 255), width=2 * S // 1)
         sx, sy = fx + 6, fy - 9
@@ -62,15 +64,18 @@ FISH = {   # 종류: (w, h, 몸색, 지느러미색, 줄무늬, 배색)
     "mid":   (44, 28, (120, 220, 160, 255), (70, 170, 120, 255), (60, 150, 100, 255), (200, 245, 220, 255)),
     "big":   (64, 38, (110, 140, 230, 255), (70, 100, 200, 255), (190, 210, 255, 255), (200, 215, 250, 255)),
     "gold":  (50, 32, (255, 215, 60, 255), (255, 170, 30, 255), (255, 255, 255, 255), (255, 240, 170, 255)),
-    "bomb":  (44, 34, (110, 120, 150, 255), (80, 90, 120, 255), None, (170, 178, 200, 255)),
 }
 
 def make_fish():
     for name, (w, h, body, fc, stripe, belly) in FISH.items():
         for frame, shift in enumerate((-3, 3)):
-            im = draw_fish(w, h, body, fc, shift, stripe, belly, bomb=(name == "bomb"), spark=frame)
+            im = draw_fish(w, h, body, fc, shift, stripe, belly, bomb=False)
             im.save(f"{OUT}/fish_{name}_R_{frame}.png")
             ImageOps.mirror(im).save(f"{OUT}/fish_{name}_L_{frame}.png")
+            if name in ("small", "mid", "big"):    # 폭탄 물고기: 일반 물고기와 같은 모양/색에 심지만 추가
+                bm = draw_fish(w, h, body, fc, shift, stripe, belly, bomb=True, spark=frame)
+                bm.save(f"{OUT}/fish_bomb_{name}_R_{frame}.png")
+                ImageOps.mirror(bm).save(f"{OUT}/fish_bomb_{name}_L_{frame}.png")
 
 # ---------------- 배경 / 배 / 바늘 / 거품 / 폭발 ----------------
 def make_bg():
