@@ -1,6 +1,6 @@
 import time                                    
 import os                                      # 이미지 폴더 경로를 만들기 위해 사용
-import math                                    # 출렁임(사인 곡선) 계산에 사용 (수학 함수)
+import math                                    # 출렁임 표현 (sin 함수)
 import random                                  
 import board                                   
 import digitalio                               
