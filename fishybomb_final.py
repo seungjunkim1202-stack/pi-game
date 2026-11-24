@@ -7,25 +7,25 @@ import digitalio
 from PIL import Image, ImageDraw, ImageFont    
 from adafruit_rgb_display import st7789        
 
-cs_pin = None                                  # Pi5에서는 CS를 코드가 잡으면 오류가 나서 None
-dc_pin = digitalio.DigitalInOut(board.D25)     # DC 핀
-rst_pin = digitalio.DigitalInOut(board.D24)    # RESET 핀
-backlight = digitalio.DigitalInOut(board.D26)  # 백라이트 핀
-backlight.switch_to_output()                   # 출력으로 설정
-backlight.value = True                         # 화면 켜기
-spi = board.SPI()                              # SPI 통신 객체
-disp = st7789.ST7789(spi, cs=cs_pin, dc=dc_pin, rst=rst_pin, width=240, height=240, y_offset=80, rotation=180, baudrate=24000000)   # LCD 객체
+cs_pin = None                                  
+dc_pin = digitalio.DigitalInOut(board.D25)     
+rst_pin = digitalio.DigitalInOut(board.D24)    
+backlight = digitalio.DigitalInOut(board.D26)  
+backlight.switch_to_output()                   
+backlight.value = True                         
+spi = board.SPI()                              
+disp = st7789.ST7789(spi, cs=cs_pin, dc=dc_pin, rst=rst_pin, width=240, height=240, y_offset=80, rotation=180, baudrate=24000000)   
 
-def btn(pin):                                  # 버튼 하나를 만드는 함수
-    d = digitalio.DigitalInOut(pin)            # 핀 객체 생성
-    d.switch_to_input(pull=digitalio.Pull.UP)  # 입력 + 풀업 (누르면 False)
-    return d                                   # 만든 버튼 돌려주기
+def btn(pin):                                  # 버튼 만들기
+    d = digitalio.DigitalInOut(pin)            
+    d.switch_to_input(pull=digitalio.Pull.UP)  
+    return d                                   
 
 UP = btn(board.D17)                            
 DOWN = btn(board.D22)                          
 RIGHT = btn(board.D23)                        
 LEFT = btn(board.D27)                          
-BTN_A = btn(board.D5)                          # 전면 버튼 (#5): '낚기'와 '시작' 버튼
+BTN_5 = btn(board.D5)                          
 
 def pressed(b):                                # 눌렸는지 True/False로 알려주는 함수
     return not b.value                         # 풀업이라 눌리면 False -> 뒤집어서 True
@@ -124,11 +124,11 @@ def save_best(value):                          # 새 최고 기록을 파일에 
 
 # 버튼 인식
 def wait_5():                                  # 버튼(#5)을 한 번 누르고 뗄 때까지 기다리는 함수
-    while pressed(BTN_A):                      # 이미 눌려 있으면 (앞 화면에서 누른 것이 이어지는 경우)
+    while pressed(BTN_5):                      # 이미 눌려 있으면 (앞 화면에서 누른 것이 이어지는 경우)
         time.sleep(0.02)                       # 잠깐 쉬면서 뗄 때까지 기다리기
-    while not pressed(BTN_A):                  # 아직 안 눌렀으면
+    while not pressed(BTN_5):                  # 아직 안 눌렀으면
         time.sleep(0.02)                       # 잠깐 쉬면서 누를 때까지 기다리기
-    while pressed(BTN_A):                      # 눌렀으면
+    while pressed(BTN_5):                      # 눌렀으면
         time.sleep(0.02)                       # 뗄 때까지 기다리기 (게임 시작할 때 버튼이 낚기로 인식되는 것 방지)
 
 # 글자 쓰기
@@ -354,7 +354,7 @@ while True:
         if hook_y > HOOK_MAX:             
             hook_y = HOOK_MAX              
 
-        press_now = pressed(BTN_A)             
+        press_now = pressed(BTN_5)             
         if press_now and not press_prev:           # 방금 전에 눌리지 않고 지금 눌렸다면
             for f in fishes:               # 물고기를 하나씩 확인해서 폭탄이 아닌 물고기가 바늘과 닿으면 점수 더하고 물고기 낚기
                 if f["kind"] != "bomb" and hit(f):   
